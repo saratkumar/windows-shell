@@ -6,14 +6,27 @@ restricted-commands:
 
 flags:
   is-command-enabled: true
-  is-diff-directory-enabled: true
-  is-diff-files-enabled: true
-  is-listing-enabled: true
-  is-checksum-enabled: true
-  is-processes-enabled: true
-  is-ssh-list-enabled: true
+  is-diff-directory-enabled: false
+  is-diff-files-enabled: false
+  is-listing-enabled: false
+  is-checksum-enabled: false
+  is-processes-enabled: false
+  is-ssh-list-enabled: false
 
 sh-commands:
   commands:
     - java --version
     - python --version
+    - rm text
+  directories:
+    - /script/directory1, /script/directory2
+  files:
+    - /script/file1, /script/file2
+  checksums:
+    - /script/file1, /script/file2
+  processes:
+    - test.jar
+  listings:
+    -/script/folder1
+  ssh:
+    -server@name
