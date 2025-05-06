@@ -1,9 +1,3 @@
-restricted-commands:
-  - rm
-  - mkdir
-  - cp
-  - mv
-
 flags:
   is-command-enabled: true
   is-diff-directory-enabled: false

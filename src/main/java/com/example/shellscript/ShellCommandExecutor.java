@@ -1,15 +1,15 @@
 package com.example.shellscript;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
-import org.springframework.core.io.Resource;
 
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -17,12 +17,10 @@ import java.util.regex.Pattern;
 @Component
 public class ShellCommandExecutor {
 
-    @Value("${config.file}")
-    private Resource yamlFile;
+    @Autowired
+    private Environment env;
 
     private final ProcessBuilder builder = new ProcessBuilder();
-
-
 
     String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
 
@@ -30,12 +28,25 @@ public class ShellCommandExecutor {
 
     String summaryLogFile = "summary_log_" + timestamp + ".log";
 
-    List<String> restrictedCommands = new ArrayList<>();
 
     File log = null;
 
+    final static List<String> listOfRestrictedCommands = Arrays.asList("rm", "mkdir", "cp", "mv");
+
     @PostConstruct
     public void readConditionalCommands() throws Exception {
+        String configPath = env.getProperty("config.file");
+        if (configPath == null || configPath.isEmpty()) {
+            System.err.println("Missing required property: --config.file=path/to/config.yaml");
+            return;
+        }
+        File yamlFile = new File(configPath);
+        if (!yamlFile.exists()) {
+            System.err.println("Config file not found at: " + yamlFile.getAbsolutePath());
+            return;
+        } else {
+            System.err.println("Config file found at: " + yamlFile.getAbsolutePath());
+        }
         Yaml yaml = new Yaml();
         File logDir = new File("logs");
         if (!logDir.exists()) {
@@ -44,16 +55,16 @@ public class ShellCommandExecutor {
         log = new File(logDir, logFileName);
         File summaryLog = new File(logDir, summaryLogFile);
         try (
-                InputStream input = yamlFile.getInputStream();
+                InputStream input = new FileInputStream(yamlFile);
                 PrintWriter writer = new PrintWriter(new FileWriter(summaryLog, true))
         ) {
             Map<String, Object> yamlData = yaml.load(input);
 
             Map<String, Object> flagsMap = (Map<String, Object>) yamlData.get("flags");
 
-            Map<String, Object> shScriptMap = (Map<String, Object>) yamlData.get("sh-commands");
+            System.out.println("Coming here");
 
-            restrictedCommands = (List<String>) yamlData.get("restricted-commands");
+            Map<String, Object> shScriptMap = (Map<String, Object>) yamlData.get("sh-commands");
 
             boolean isCommandEnabled = Boolean.TRUE.equals(flagsMap.get("is-command-enabled"));
             boolean isDiffDictEnabled = Boolean.TRUE.equals(flagsMap.get("is-diff-directory-enabled"));
@@ -161,8 +172,8 @@ public class ShellCommandExecutor {
     }
 
 
-    private static boolean containsForbiddenCommand(String input, List<String> forbiddenList) {
-        for (String forbidden : forbiddenList) {
+    private static boolean containsForbiddenCommand(String input) {
+        for (String forbidden : listOfRestrictedCommands) {
             // You can make this more strict with regex or word boundaries if needed
             if (input.matches(".*\\b" + Pattern.quote(forbidden) + "\\b.*")) {
                 return true;
@@ -174,7 +185,7 @@ public class ShellCommandExecutor {
 
     private Boolean execute(String command) {
         try {
-            if(!containsForbiddenCommand(command, restrictedCommands)) {
+            if(!containsForbiddenCommand(command)) {
                 builder.command("bash", "-c", command);
                 builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
                 builder.redirectError(ProcessBuilder.Redirect.appendTo(log));
