@@ -76,7 +76,7 @@ public class ShellCommandExecutor {
 
             PrintStream logStream = new PrintStream(new FileOutputStream(log, true));
             System.setOut(logStream);
-            writer.println("Linux File System  Executing Commands:");
+            writer.println("Linux File System  Executing Commands:\n");
             int count = 0;
             if(isCommandEnabled) {
                 List<String> commands = (List<String>) shScriptMap.get("commands");
@@ -186,6 +186,7 @@ public class ShellCommandExecutor {
     private Boolean execute(String command) {
         try {
             if(!containsForbiddenCommand(command)) {
+                System.out.println("Running Command " + command + "\n");
                 builder.command("bash", "-c", command);
                 builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
                 builder.redirectError(ProcessBuilder.Redirect.appendTo(log));
@@ -194,8 +195,7 @@ public class ShellCommandExecutor {
                 process.getErrorStream().transferTo(System.err);
                 int exitCode = process.waitFor();
                 System.out.println("Exit code: " + exitCode);
-                return true;
-
+                return exitCode != 0;
             } else {
                 System.out.println("Unable to execute the command as it is containing restricted command " +command);
                 return false;
@@ -211,9 +211,9 @@ public class ShellCommandExecutor {
 
     private void writeLogs(int count, String message, PrintWriter writer) {
         if(count >0) {
-            writer.println("ERROR: "+ count + " issues reported in executing commands");
+            writer.println("ERROR: "+ count + " issues reported in "+ message +"\n");
         } else {
-            writer.println("No issue in executing commands");
+            writer.println("No issue in " +message +"\n");
         }
     }
 }
