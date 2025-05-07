@@ -62,7 +62,6 @@ public class ShellCommandExecutor {
 
             Map<String, Object> flagsMap = (Map<String, Object>) yamlData.get("flags");
 
-            System.out.println("Coming here");
 
             Map<String, Object> shScriptMap = (Map<String, Object>) yamlData.get("sh-commands");
 
@@ -76,7 +75,9 @@ public class ShellCommandExecutor {
 
             PrintStream logStream = new PrintStream(new FileOutputStream(log, true));
             System.setOut(logStream);
-            writer.println("Linux File System  Executing Commands:\n");
+            writer.println("Health Check Status update summary:\n");
+            writer.println("======================================================================:\n");
+            writer.println("Linux File Systems executing Commands:\n");
             int count = 0;
             if(isCommandEnabled) {
                 List<String> commands = (List<String>) shScriptMap.get("commands");
@@ -88,7 +89,7 @@ public class ShellCommandExecutor {
                 }
                 writeLogs(count, "executing commands", writer);
             }
-
+            writer.println("Linux File Systems listing directories:\n");
             if(isListingEnabled) {
                 count = 0;
                 List<String> listings = (List<String>) shScriptMap.get("listings");
@@ -100,6 +101,8 @@ public class ShellCommandExecutor {
                 }
                 writeLogs(count, "listing directories", writer);
             }
+
+            writer.println("Linux File Systems diff directories:\n");
 
             if(isDiffDictEnabled) {
                 count = 0;
@@ -115,6 +118,8 @@ public class ShellCommandExecutor {
                 writeLogs(count, "diff directories", writer);
             }
 
+            writer.println("Linux File Systems diff files:\n");
+
             if(isDiffFileEnabled) {
                 count = 0;
                 List<String> fileList = (List<String>) shScriptMap.get("files");
@@ -128,7 +133,7 @@ public class ShellCommandExecutor {
 
                 writeLogs(count, "diff files", writer);
             }
-
+            writer.println("Linux File Systems checksum files:\n");
             if(isChecksumEnabled) {
                 count = 0;
                 List<String> fileList = (List<String>) shScriptMap.get("checksums");
@@ -142,19 +147,19 @@ public class ShellCommandExecutor {
                 writeLogs(count, "checksum files", writer);
             }
 
-
+            writer.println("Linux processes running status:\n");
             if(isProcessEnabled) {
                 count = 0;
                 List<String> processes = (List<String>) shScriptMap.get("processes");
                 for(String process: processes) {
-                    Boolean isExecuted = execute("ps -ef "+process);
+                    Boolean isExecuted = execute("ps -ef | grep \" "+process+ "\"");
                     if(!isExecuted) {
                         count++;
                     }
                 }
                 writeLogs(count, "processes", writer);
             }
-
+            writer.println("SSH Connectivity Status check:\n");
             if(isSshEnabled) {
                 count = 0;
                 List<String> ssh = (List<String>) shScriptMap.get("ssh");
