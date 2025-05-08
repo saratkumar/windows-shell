@@ -1,0 +1,18 @@
+flags:
+  isCommandsEnabled: true
+  commands:
+    isCommandEnabled: true
+    isDiffDirectoryEnabled: true
+    isDiffFilesEnabled: true
+    isListingEnabled: true
+    isChecksumEnabled: true
+    isProcessesEnabled: true
+    isSshEnabled: true
+
+configDirectory: PROD
+
+releaseCode: ${releaseCode}
+
+
+
+

@@ -1,12 +1,3 @@
-flags:
-  is-command-enabled: true
-  is-diff-directory-enabled: false
-  is-diff-files-enabled: false
-  is-listing-enabled: false
-  is-checksum-enabled: false
-  is-processes-enabled: false
-  is-ssh-list-enabled: false
-
 sh-commands:
   commands:
     - java --version
