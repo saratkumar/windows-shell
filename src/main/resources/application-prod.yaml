@@ -8,6 +8,7 @@ flags:
     isChecksumEnabled: true
     isProcessesEnabled: true
     isSshEnabled: true
+  isMariaDBServiceEnabled: false
 
 configDirectory: PROD
 

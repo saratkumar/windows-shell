@@ -1,5 +1,6 @@
 package com.example.shellscript.components;
 
+import com.example.shellscript.services.SqlService;
 import com.example.shellscript.utils.LoggerUtility;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class ShellCommandExecutor {
 
     @Autowired
     CommandConfig commandConfig;
+
+    @Autowired
+    SqlService sqlService;
 
     String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
 
@@ -40,6 +44,8 @@ public class ShellCommandExecutor {
         LoggerUtility.setupDualLogging(log, summaryLog, true);
 
         commandConfig.processLinuxCommands(log);
+
+        sqlService.processQuery();
 
 
     }

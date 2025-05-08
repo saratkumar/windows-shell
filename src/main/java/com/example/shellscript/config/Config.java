@@ -11,6 +11,9 @@ public class Config {
 
     private Boolean isCommandsEnabled;
 
+
+    private Boolean isMariaDBServiceEnabled;
+
     public Boolean getIsCommandsEnabled() {
         return isCommandsEnabled;
     }
@@ -25,6 +28,15 @@ public class Config {
 
     public void setCommands(CommandsProp commands) {
         this.commands = commands;
+    }
+
+
+    public Boolean getIsMariaDBServiceEnabled() {
+        return isMariaDBServiceEnabled;
+    }
+
+    public void setIsMariaDBServiceEnabled(Boolean isMariaDBServiceEnabled) {
+        isMariaDBServiceEnabled = isMariaDBServiceEnabled;
     }
 
 }

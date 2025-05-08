@@ -17,8 +17,8 @@ public class LoggerUtility {
 
             // Create print stream to redirect to console and file
             consoleStream = new PrintStream(new FileOutputStream(detailedLogFile, append));
-//            System.setOut(consoleStream);  // Redirect System.out to the log file
-//            System.setErr(consoleStream);  // Optionally, redirect System.err as well for error logs
+            System.setOut(consoleStream);  // Redirect System.out to the log file
+            System.setErr(consoleStream);  // Optionally, redirect System.err as well for error logs
 
 
         } catch (IOException e) {
