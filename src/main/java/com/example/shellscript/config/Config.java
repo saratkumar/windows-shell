@@ -36,7 +36,7 @@ public class Config {
     }
 
     public void setIsMariaDBServiceEnabled(Boolean isMariaDBServiceEnabled) {
-        isMariaDBServiceEnabled = isMariaDBServiceEnabled;
+        this.isMariaDBServiceEnabled = isMariaDBServiceEnabled;
     }
 
 }

@@ -2,6 +2,7 @@ package com.example.shellscript.components;
 
 import com.example.shellscript.config.CommandsProp;
 import com.example.shellscript.config.Config;
+import com.example.shellscript.services.ChecksumService;
 import com.example.shellscript.utils.AppUtils;
 import com.example.shellscript.utils.LoggerUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class CommandConfig {
     @Value("${releaseCode}")
     private String releaseCode;
 
+    @Autowired
+    ChecksumService checksumService;
+
 
     private final ProcessBuilder builder = new ProcessBuilder();
 
@@ -52,13 +56,12 @@ public class CommandConfig {
                 Map<String, Object> shScriptMap = (Map<String, Object>) yamlData.get("sh-commands");
                 LoggerUtility.logMessage("Health Check Status update summary:\n");
                 LoggerUtility.logMessage("======================================================================:\n");
-                LoggerUtility.logMessage("Linux File Systems executing Commands:\n");
                 int count = 0;
-
                 int totalCount = 0;
 
 
                 if(commandsProp.getIsCommandEnabled()) {
+                    LoggerUtility.logMessage("Linux File Systems executing Commands:\n");
                     List<String> commands = (List<String>) shScriptMap.get("commands");
                     for (String command : commands) {
                         Boolean isExecuted = execute(command);
@@ -69,8 +72,9 @@ public class CommandConfig {
                     }
                     writeLogs(count, "executing commands");
                 }
-                LoggerUtility.logMessage("Linux File Systems listing directories:\n");
+
                 if(commandsProp.getIsListingEnabled()) {
+                    LoggerUtility.logMessage("Linux File Systems listing directories:\n");
                     count = 0;
                     List<String> listings = (List<String>) shScriptMap.get("listings");
                     for (String directory: listings) {
@@ -83,9 +87,10 @@ public class CommandConfig {
                     writeLogs(count, "listing directories");
                 }
 
-                LoggerUtility.logMessage("Linux File Systems diff directories:\n");
+
 
                 if(commandsProp.getIsDiffDirectoryEnabled()) {
+                    LoggerUtility.logMessage("Linux File Systems diff directories:\n");
                     count = 0;
                     List<String> directoriesList = (List<String>) shScriptMap.get("directories");
                     for (String directories : directoriesList) {
@@ -100,9 +105,10 @@ public class CommandConfig {
                     writeLogs(count, "diff directories");
                 }
 
-                LoggerUtility.logMessage("Linux File Systems diff files:\n");
 
                 if(commandsProp.getIsDiffFilesEnabled()) {
+                    LoggerUtility.logMessage("Linux File Systems diff files:\n");
+
                     count = 0;
                     List<String> fileList = (List<String>) shScriptMap.get("files");
                     for (String files : fileList) {
@@ -116,27 +122,26 @@ public class CommandConfig {
 
                     writeLogs(count, "diff files");
                 }
-                LoggerUtility.logMessage("Linux File Systems checksum files:\n");
+
                 if(commandsProp.getIsChecksumEnabled()) {
+                    LoggerUtility.logMessage("Linux File Systems checksum files:\n");
                     count = 0;
                     List<String> fileList = (List<String>) shScriptMap.get("checksums");
                     for (String files : fileList) {
                         String[] file = files.split(",");
-                        Boolean isExecuted = execute("checksum "+file[0]+" "+file[1]);
-                        if(!isExecuted) {
-                            count++;
-                            totalCount++;
-                        }
+                        count = checksumService.checksumComparison(file[0], file[1]);
+                        totalCount += count;
                     }
                     writeLogs(count, "checksum files");
                 }
 
-                LoggerUtility.logMessage("Linux processes running status:\n");
+
                 if(commandsProp.getIsProcessesEnabled()) {
+                    LoggerUtility.logMessage("Linux processes running status:\n");
                     count = 0;
                     List<String> processes = (List<String>) shScriptMap.get("processes");
                     for(String process: processes) {
-                        Boolean isExecuted = execute("ps -ef | grep \" "+process+ "\"");
+                        Boolean isExecuted = execute("ps -ef | grep \""+process+ "\"");
                         if(!isExecuted) {
                             count++;
                             totalCount++;
@@ -144,12 +149,13 @@ public class CommandConfig {
                     }
                     writeLogs(count, "processes");
                 }
-                LoggerUtility.logMessage("SSH Connectivity Status check:\n");
+
                 if(commandsProp.getIsSshEnabled()) {
+                    LoggerUtility.logMessage("SSH Connectivity Status check:\n");
                     count = 0;
                     List<String> ssh = (List<String>) shScriptMap.get("ssh");
                     for(String item: ssh) {
-                        Boolean isExecuted = execute("sshg3 -B "+item+ " echo SSH Connection Success");
+                        Boolean isExecuted = execute(item+" echo \"SSH Connection Success\"");
                         if(!isExecuted) {
                             count++;totalCount++;
                         }
@@ -157,8 +163,10 @@ public class CommandConfig {
                     writeLogs(count, "ssh connectivity");
                 }
 
-                LoggerUtility.logMessage("Command Script execution failed with "+ totalCount +" errors. please check detailed logs for further information");
-
+                if(totalCount > 0)
+                    LoggerUtility.logMessage("Command Script execution failed with "+ totalCount +" errors. please check detailed logs for further information");
+                else
+                    LoggerUtility.logMessage("Command Script executed successfully\n");
             }
         }
 
