@@ -5,6 +5,8 @@ import com.example.shellscript.config.Config;
 import com.example.shellscript.services.ChecksumService;
 import com.example.shellscript.utils.AppUtils;
 import com.example.shellscript.utils.LoggerUtility;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -27,8 +30,11 @@ public class CommandConfig {
     @Value("${configDirectory}")
     private String configDirectory;
 
-    @Value("${releaseCode}")
-    private String releaseCode;
+    @Value("${appCode}")
+    private String appCode;
+
+    @Value("${serviceCode}")
+    private String serviceCode;
 
     @Autowired
     ChecksumService checksumService;
@@ -49,8 +55,9 @@ public class CommandConfig {
     public void processLinuxCommands(File log) throws Exception {
         this.log = log;
         if(systemConfig.getIsCommandsEnabled()) {
-            String path = String.format("classpath:%s/config_%s_commands.yaml", configDirectory, releaseCode);
+            String path = String.format("classpath:%s/%s/%s/commands_config.yaml", configDirectory, appCode, serviceCode);
             if(appUtils.getFile(path) != null) {
+                test();
                 CommandsProp commandsProp = systemConfig.getCommands();
                 Map<String, Object> yamlData = yaml.load(appUtils.getFile(path).getInputStream());
                 Map<String, Object> shScriptMap = (Map<String, Object>) yamlData.get("sh-commands");
@@ -206,5 +213,50 @@ public class CommandConfig {
         }
 
 
+    }
+
+    private void test() throws Exception {
+        String path = "/scripts/pcf-health-check.sh";
+
+        InputStream scriptStream = ShellCommandExecutor.class.getResourceAsStream(path);
+
+        File tempScript = new File(System.getProperty("java.io.tmpdir"), "pcf-health-check.sh");
+
+        try(BufferedInputStream bis = new BufferedInputStream((scriptStream))) {
+            FileOutputStream fos = new FileOutputStream(tempScript);
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while((bytesRead = bis.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        tempScript.setExecutable(true);
+
+        String bashPath = "C:\\Windows\\System32\\wsl.exe";
+
+        ProcessBuilder processBuilder = new ProcessBuilder(bashPath, tempScript.getAbsolutePath());
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "test");
+
+        String json = new ObjectMapper().writeValueAsString(map);
+        String escapedJson = "'" + json.replace("'", "'\\''") + "'";  // ✅ {"name":"test"}
+
+        System.out.println("Sending JSON: " + json);
+        processBuilder = new ProcessBuilder( "C:\\Program Files\\Git\\bin\\bash.exe",
+                tempScript.getAbsolutePath(),
+                escapedJson
+        );
+
+        processBuilder.inheritIO();
+
+        Process process = processBuilder.start();
+
+        int exitCode = process.waitFor();
+
+        tempScript.delete();
     }
 }

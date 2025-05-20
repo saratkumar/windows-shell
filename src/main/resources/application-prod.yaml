@@ -2,17 +2,18 @@ flags:
   isCommandsEnabled: true
   commands:
     isCommandEnabled: true
-    isDiffDirectoryEnabled: true
-    isDiffFilesEnabled: true
-    isListingEnabled: true
+    isDiffDirectoryEnabled: false
+    isDiffFilesEnabled: false
+    isListingEnabled: false
     isChecksumEnabled: true
-    isProcessesEnabled: true
-    isSshEnabled: true
+    isProcessesEnabled: false
+    isSshEnabled: false
   isMariaDBServiceEnabled: false
 
 configDirectory: PROD
 
-releaseCode: ${releaseCode}
+appCode: ${appCode}
+serviceCode: ${serviceCode}
 
 
 
